@@ -125,14 +125,15 @@ export default function RegisterPage() {
         <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl shadow-black/20">
 
           {/* Logo */}
-          <div className="flex items-center justify-center gap-2 mb-8">
+          <Link href="/" className="flex items-center justify-center gap-2 mb-8">
+
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <Briefcase className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-2xl">
               Hire<span className="text-primary">Flow</span>
             </span>
-          </div>
+          </Link>
 
           <h1 className="text-2xl font-bold text-foreground text-center mb-1">
             Create your account

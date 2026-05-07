@@ -1,5 +1,7 @@
+"use client"
+
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
-import { LayoutDashboard, Building2, Users, Briefcase, Layers } from "lucide-react";
+import { Briefcase, Building2, Layers, LayoutDashboard, Users } from "lucide-react";
 
 const adminNavItems = [
   { title: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },

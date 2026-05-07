@@ -1,5 +1,6 @@
+"use client"
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
-import { LayoutDashboard, Briefcase, FileText, User } from "lucide-react";
+import { Briefcase, FileText, LayoutDashboard, User } from "lucide-react";
 
 const companyNavItems = [
   { title: "Dashboard", href: "/company/dashboard", icon: LayoutDashboard },

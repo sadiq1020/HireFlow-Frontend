@@ -1,5 +1,7 @@
+'use client';
+
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
-import { LayoutDashboard, FileText, Bookmark, User } from "lucide-react";
+import { Bookmark, FileText, LayoutDashboard, User } from "lucide-react";
 
 const seekerNavItems = [
   { title: "Dashboard", href: "/seeker/dashboard", icon: LayoutDashboard },

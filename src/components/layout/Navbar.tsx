@@ -4,7 +4,8 @@ import { signOut, useSession } from '@/lib/auth-client';
 import { useAuthStore } from '@/store/authStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { gsap } from 'gsap';
-import { Briefcase, ChevronDown, LayoutDashboard, LogOut, Menu, User, X } from 'lucide-react';
+import { Briefcase, ChevronDown, LayoutDashboard, LogOut, Menu, Moon, Sun, User, X } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -32,7 +33,11 @@ export default function Navbar() {
   const { data: session } = useSession();
   const { setUser } = useAuthStore();
 
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const ctx = gsap.context(() => {
       gsap.fromTo(
         navRef.current,
@@ -52,7 +57,7 @@ export default function Navbar() {
   const handleSignOut = async () => {
     await signOut();
     setUser(null);
-    router.push('/');
+    router.push('/login');
   };
 
   return (
@@ -96,6 +101,17 @@ export default function Navbar() {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
+
+            {/* Theme Toggle */}
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+            )}
+
             {session?.user ? (
               <div className="relative">
                 <button
@@ -125,6 +141,7 @@ export default function Navbar() {
                       <div className="p-2 border-b border-border">
                         <p className="text-xs text-muted-foreground px-2">{session.user.email}</p>
                       </div>
+                      
                       <div className="p-1">
                         <Link
                           href={getDashboardLink((session.user as any).role || 'SEEKER')}
@@ -207,6 +224,18 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="pt-2 border-t border-border space-y-2">
+
+                {/* Theme Toggle */}
+                {mounted && (
+                  <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  >
+                    {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  </button>
+                )}
+
                 {session?.user ? (
                   <>
                     <Link
