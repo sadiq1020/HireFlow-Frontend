@@ -1,11 +1,19 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  image?: string;
+  phone?: string;
+  isActive: boolean;
+}
+
 interface AuthState {
-  user: any | null;
-  token: string | null;
-  setUser: (user: any) => void;
-  setToken: (token: string | null) => void;
+  user: IUser | null;
+  setUser: (user: IUser | null) => void;
   logout: () => void;
 }
 
@@ -13,13 +21,11 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       setUser: (user) => set({ user }),
-      setToken: (token) => set({ token }),
-      logout: () => set({ user: null, token: null }),
+      logout: () => set({ user: null }),
     }),
     {
-      name: 'auth-storage',
+      name: 'hireflow-auth',
     }
   )
 );

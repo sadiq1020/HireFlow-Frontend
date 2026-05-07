@@ -1,39 +1,92 @@
-import Link from "next/link";
+import { Briefcase, Code } from 'lucide-react';
+import Link from 'next/link';
+
+const footerLinks = {
+  Product: [
+    { label: 'Browse Jobs', href: '/jobs' },
+    { label: 'Companies', href: '/companies' },
+    { label: 'Post a Job', href: '/register' },
+  ],
+  Company: [
+    { label: 'About', href: '/about' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Contact', href: '/contact' },
+  ],
+  Legal: [
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
+  ],
+};
 
 export default function Footer() {
   return (
-    <footer className="border-t bg-muted/40 py-12">
-      <div className="container grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div className="space-y-4">
-          <h3 className="text-lg font-bold">HireFlow</h3>
-          <p className="text-sm text-muted-foreground">The ultimate platform for finding your next career move.</p>
+    <footer className="border-t border-border bg-card/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+
+          {/* Brand */}
+          <div className="col-span-2 md:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Briefcase className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <span className="font-bold text-xl">
+                Hire<span className="text-primary">Flow</span>
+              </span>
+            </Link>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              AI-powered job platform connecting top talent with great companies worldwide.
+            </p>
+            <div className="flex items-center gap-3">
+              <a
+                href="#"
+                className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors text-xs font-bold text-muted-foreground"
+              >
+                X
+              </a>
+              <a
+                href="#"
+                className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors text-xs font-bold text-muted-foreground"
+              >
+                in
+              </a>
+              <a
+                href="#"
+                className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors"
+              >
+                <Code className="w-4 h-4 text-muted-foreground" />
+              </a>
+            </div>
+          </div>
+
+          {/* Links */}
+          {Object.entries(footerLinks).map(([category, links]) => (
+            <div key={category}>
+              <h4 className="font-semibold text-foreground mb-4 text-sm">{category}</h4>
+              <ul className="space-y-2">
+                {links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <div>
-          <h4 className="font-semibold mb-4">Product</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="/jobs">Browse Jobs</Link></li>
-            <li><Link href="/companies">Companies</Link></li>
-            <li><Link href="/blog">Blog</Link></li>
-          </ul>
+
+        <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} HireFlow. All rights reserved.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Built with ❤️ using Next.js & AI
+          </p>
         </div>
-        <div>
-          <h4 className="font-semibold mb-4">Support</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="/contact">Contact</Link></li>
-            <li><Link href="/about">About Us</Link></li>
-            <li><Link href="/faq">FAQ</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold mb-4">Legal</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="/privacy">Privacy Policy</Link></li>
-            <li><Link href="/terms">Terms of Service</Link></li>
-          </ul>
-        </div>
-      </div>
-      <div className="container mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} HireFlow Inc. All rights reserved.
       </div>
     </footer>
   );

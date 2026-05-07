@@ -1,22 +1,23 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "../styles/globals.css";
-import QueryProvider from "@/providers/query-provider";
-import LenisProvider from "@/providers/lenis-provider";
+import LenisProvider from '@/providers/lenis-provider';
+import QueryProvider from '@/providers/query-provider';
+import { ThemeProvider } from '@/providers/theme-provider';
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import '../styles/globals.css';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "HireFlow - Premium Job Board",
-  description: "Advanced job platform built with Next.js 16",
+  title: 'HireFlow — Find Your Dream Job',
+  description: 'Premium AI-powered job board connecting top talent with great companies.',
 };
 
 export default function RootLayout({
@@ -25,16 +26,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-    >
-      <body>
-        <QueryProvider>
-          <LenisProvider>
-            {children}
-          </LenisProvider>
-        </QueryProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <LenisProvider>
+              {children}
+            </LenisProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

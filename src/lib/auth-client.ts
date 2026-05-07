@@ -1,9 +1,12 @@
-// Placeholder for Better Auth Client
-// You will need to configure this with your actual Better Auth setup
+import { createAuthClient } from 'better-auth/react';
 
-export const authClient = {
-    // mock methods
-    signIn: async () => {},
-    signOut: async () => {},
-    useSession: () => ({ data: null, isPending: false }),
-};
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000',
+});
+
+export const {
+  signIn,
+  signOut,
+  signUp,
+  useSession,
+} = authClient;
