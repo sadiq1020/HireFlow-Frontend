@@ -1,10 +1,11 @@
 'use client';
 
+import { CompanyCardSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
 import { ICompany } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowRight, Briefcase, Building2, Loader2, MapPin, Star } from 'lucide-react';
+import { ArrowRight, Briefcase, Building2, MapPin, Star } from 'lucide-react';
 import Link from 'next/link';
 
 const companyAccents = [
@@ -82,11 +83,13 @@ export default function TopCompanies() {
         </div>
 
         {/* Loading */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        )}
+       {isLoading && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <CompanyCardSkeleton key={i} />
+    ))}
+  </div>
+)}
 
         {/* Grid */}
         {!isLoading && companies.length > 0 && (

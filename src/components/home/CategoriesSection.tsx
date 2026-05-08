@@ -1,10 +1,11 @@
 'use client';
 
+import { CategoryCardSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
 import { ICategory } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 const categoryStyles = [
@@ -88,13 +89,12 @@ export default function CategoriesSection() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="flex flex-col items-center gap-4">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Loading categories...</span>
-            </div>
-          </div>
-        )}
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <CategoryCardSkeleton key={i} />
+    ))}
+  </div>
+)}
 
         {/* Grid */}
         {!isLoading && (

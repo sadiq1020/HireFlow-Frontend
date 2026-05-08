@@ -1,11 +1,13 @@
 'use client';
 
+import { JobCardSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
 import { IJob } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowRight, Briefcase, Clock, DollarSign, Loader2, MapPin, Zap } from 'lucide-react';
+import { ArrowRight, Briefcase, Clock, DollarSign, MapPin, Zap } from 'lucide-react';
 import Link from 'next/link';
+
 
 const jobTypeColors: Record<string, string> = {
   FULL_TIME: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -177,14 +179,13 @@ export default function FeaturedJobs() {
         </div>
 
         {/* Loading */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="flex flex-col items-center gap-4">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Loading opportunities...</span>
-            </div>
-          </div>
-        )}
+       {isLoading && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <JobCardSkeleton key={i} />
+    ))}
+  </div>
+)}
 
         {/* Jobs Grid */}
         {!isLoading && jobs.length > 0 && (
