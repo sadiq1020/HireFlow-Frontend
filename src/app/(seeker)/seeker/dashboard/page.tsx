@@ -1,5 +1,6 @@
 'use client';
 
+import JobRecommendations from '@/components/ai/JobRecommendations';
 import { DashboardStatSkeleton } from '@/components/shared/SkeletonCard';
 import {
     ChartContainer,
@@ -246,6 +247,8 @@ export default function SeekerDashboard() {
           </motion.div>
         </div>
       )}
+
+      <JobRecommendations />
 
       {/* Recent applications */}
       <motion.div
