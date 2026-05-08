@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from '@/lib/auth-client';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Brain, FileText, MessageSquare, Sparkles, Target, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -53,6 +54,7 @@ const features = [
 ];
 
 export default function AIFeatureHighlight() {
+  const { data: session } = useSession();
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -223,7 +225,7 @@ export default function AIFeatureHighlight() {
               </p>
             </div>
             <Link
-              href="/register"
+              href={session?.user ? (session.user.role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
               className="flex-shrink-0 flex items-center gap-2 px-8 py-4 bg-white text-violet-600 font-bold rounded-xl transition-all hover:shadow-xl hover:-translate-y-0.5 text-sm whitespace-nowrap"
             >
               Get Started Free

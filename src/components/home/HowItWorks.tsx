@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from '@/lib/auth-client';
 import { motion, useInView } from 'framer-motion';
 import { Search, Send, Trophy, UserPlus } from 'lucide-react';
 import Link from 'next/link';
@@ -53,6 +54,7 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  const { data: session } = useSession();
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
@@ -185,7 +187,7 @@ export default function HowItWorks() {
           className="text-center mt-20"
         >
           <Link
-            href="/register"
+            href={session?.user ? (session.user.role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
             className="group relative inline-flex items-center gap-3 px-10 py-4 bg-foreground text-background font-bold rounded-xl overflow-hidden transition-all hover:-translate-y-1 hover:shadow-2xl"
           >
             <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from '@/lib/auth-client';
 import { motion } from 'framer-motion';
 import { ArrowRight, Briefcase, Building2, Sparkles, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ const stats = [
 ];
 
 export default function CTASection() {
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -137,7 +139,7 @@ export default function CTASection() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
             >
               <Link
-                href="/register"
+                href={session?.user ? (session.user.role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
                 className="group flex items-center gap-2 px-10 py-4 bg-white text-violet-700 font-bold rounded-xl transition-all hover:shadow-2xl hover:-translate-y-1 text-sm"
               >
                 Get Started Free
@@ -207,7 +209,7 @@ export default function CTASection() {
                 Create your free profile, get AI-powered job matches, and apply to thousands of opportunities in minutes.
               </p>
               <Link
-                href="/register"
+                href={session?.user ? '/seeker/dashboard' : "/register"}
                 className="inline-flex items-center gap-2 text-emerald-400 font-semibold text-sm hover:gap-3 transition-all"
               >
                 Find your next role
@@ -237,7 +239,7 @@ export default function CTASection() {
                 Post jobs, manage applications, and use AI tools to find and hire the best talent faster than ever before.
               </p>
               <Link
-                href="/register"
+                href={session?.user ? '/company/dashboard' : "/register"}
                 className="inline-flex items-center gap-2 text-orange-400 font-semibold text-sm hover:gap-3 transition-all"
               >
                 Start hiring today

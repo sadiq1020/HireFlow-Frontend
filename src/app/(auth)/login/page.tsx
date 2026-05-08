@@ -20,8 +20,8 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 const demoAccounts = [
   { label: 'Admin', email: 'admin@hireflow.com', password: 'admin1234' },
-  { label: 'Company', email: 'company@test.com', password: '12345678' },
-  { label: 'Seeker', email: 'seeker@test.com', password: '12345678' },
+  { label: 'Company', email: 'test@company.com', password: '12345678' },
+  { label: 'Seeker', email: 'test@seeker.com', password: '12345678' },
 ];
 
 export default function LoginPage() {

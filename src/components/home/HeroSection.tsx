@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from '@/lib/auth-client';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, MapPin, Play, Search, Sparkles } from 'lucide-react';
 import Link from 'next/link';
@@ -35,6 +36,7 @@ interface Particle {
 
 export default function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [wordIndex, setWordIndex] = useState(0);
@@ -265,7 +267,7 @@ export default function HeroSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link
-            href="/register"
+            href={session?.user ? (session.user.role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
             className="group px-8 py-3.5 bg-foreground text-background font-bold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg text-sm"
           >
             <span className="flex items-center gap-2">

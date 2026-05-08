@@ -1,6 +1,7 @@
 'use client';
 
 import ApplyModal from '@/components/jobs/ApplyModal';
+import { JobDetailSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
 import { useSession } from '@/lib/auth-client';
 import { IJob } from '@/types';
@@ -14,14 +15,12 @@ import {
   CheckCircle,
   Clock, DollarSign,
   Globe,
-  Loader2,
   MapPin,
   Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { JobDetailSkeleton } from '@/components/shared/SkeletonCard';
 
 const jobTypeColors: Record<string, string> = {
   FULL_TIME: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -46,12 +45,20 @@ export default function JobDetailPage() {
   const [applyOpen, setApplyOpen] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: jobLoading } = useQuery({
     queryKey: ['job', id],
     queryFn: () => api.get<any>(`/jobs/${id}`),
   });
 
+  const { data: applicationsData, isLoading: appsLoading } = useQuery({
+    queryKey: ['my-applications'],
+    queryFn: () => api.get<any>('/applications/my'),
+    enabled: !!session?.user,
+  });
+
   const job: IJob = (data as any)?.data;
+  const hasApplied = applicationsData?.data?.some((app: any) => app.jobId === id);
+  const isLoading = jobLoading || (appsLoading && !!session?.user);
 
   const handleSave = async () => {
     if (!session?.user) { router.push('/login'); return; }
@@ -157,13 +164,25 @@ export default function JobDetailPage() {
               {/* Action buttons */}
               <div className="flex gap-3">
                 <button
+                  disabled={hasApplied}
                   onClick={() => {
                     if (!session?.user) { router.push('/login'); return; }
                     setApplyOpen(true);
                   }}
-                  className="flex-1 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-primary/25 text-sm"
+                  className={`flex-1 py-3 font-semibold rounded-xl transition-all text-sm ${
+                    hasApplied
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default'
+                      : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-lg hover:shadow-primary/25'
+                  }`}
                 >
-                  Apply Now
+                  {hasApplied ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Applied
+                    </span>
+                  ) : (
+                    'Apply Now'
+                  )}
                 </button>
                 <button
                   onClick={handleSave}
@@ -314,13 +333,25 @@ export default function JobDetailPage() {
                 Don&apos;t miss out — apply before the deadline.
               </p>
               <button
+                disabled={hasApplied}
                 onClick={() => {
                   if (!session?.user) { router.push('/login'); return; }
                   setApplyOpen(true);
                 }}
-                className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-primary/25 text-sm"
+                className={`w-full py-2.5 font-semibold rounded-xl transition-all text-sm ${
+                  hasApplied
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default'
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-lg hover:shadow-primary/25'
+                }`}
               >
-                Apply Now
+                {hasApplied ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Applied
+                  </span>
+                ) : (
+                  'Apply Now'
+                )}
               </button>
             </motion.div>
           </div>
@@ -333,6 +364,10 @@ export default function JobDetailPage() {
         onClose={() => setApplyOpen(false)}
         jobId={job.id}
         jobTitle={job.title}
+        companyName={job.company?.companyName}
+        jobType={job.type}
+        jobLocation={job.location}
+        jobDescription={job.description}
       />
     </div>
   );
