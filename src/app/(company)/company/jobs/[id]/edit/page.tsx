@@ -1,5 +1,6 @@
 'use client';
 
+import { AIJobDescriptionPanel } from '@/components/ai/AIJobDescriptionPanel'; // ← added
 import { api } from '@/lib/api';
 import { ICategory } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,12 +48,16 @@ export default function EditJobPage() {
     queryFn: () => api.get<any>('/categories'),
   });
 
-  const categories: ICategory[] = categoriesData?.data || [];
-  const job = jobData?.data;
+  const categories: ICategory[] = (categoriesData as any)?.data || [];
+  const job = (jobData as any)?.data;
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<JobForm>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<JobForm>({ // ← added watch
     resolver: zodResolver(jobSchema),
   });
+
+  // ← added: read live values for the AI panel
+  const title    = watch('title')    ?? '';
+  const location = watch('location') ?? '';
 
   useEffect(() => {
     if (job) {
@@ -77,6 +82,12 @@ export default function EditJobPage() {
     onSuccess: () => router.push('/company/jobs'),
   });
 
+  // ← added: called when company clicks "Apply to Form" inside the AI panel
+  const handleAIApply = (description: string, requirements: string) => {
+    setValue('description', description, { shouldValidate: true });
+    setValue('requirements', requirements, { shouldValidate: true });
+  };
+
   const inputClass = "w-full px-4 py-2.5 bg-secondary border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm";
   const labelClass = "block text-sm font-semibold text-foreground mb-1.5";
 
@@ -100,6 +111,8 @@ export default function EditJobPage() {
       </motion.div>
 
       <form onSubmit={handleSubmit((data) => updateJob({ ...data, type: selectedType as any }))} className="space-y-6">
+
+        {/* Basic Information — unchanged */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card border border-border rounded-2xl p-6 space-y-4">
           <h2 className="text-base font-bold text-foreground border-b border-border pb-3">Basic Information</h2>
           <div>
@@ -136,8 +149,20 @@ export default function EditJobPage() {
           </div>
         </motion.div>
 
+        {/* Job Details — header now has AI panel button */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-2xl p-6 space-y-4">
-          <h2 className="text-base font-bold text-foreground border-b border-border pb-3">Job Details</h2>
+
+          {/* ↓ only this line changed vs the original — was a plain <h2>, now a flex row with the AI panel */}
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <h2 className="text-base font-bold text-foreground">Job Details</h2>
+            <AIJobDescriptionPanel
+              jobTitle={title}
+              jobType={selectedType}
+              jobLocation={location}
+              onApply={handleAIApply}
+            />
+          </div>
+
           <div>
             <label className={labelClass}>Description</label>
             <textarea {...register('description')} rows={6} className={`${inputClass} resize-none`} />
@@ -149,6 +174,7 @@ export default function EditJobPage() {
           </div>
         </motion.div>
 
+        {/* Compensation & Deadline — unchanged */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card border border-border rounded-2xl p-6 space-y-4">
           <h2 className="text-base font-bold text-foreground border-b border-border pb-3">Compensation & Deadline</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -167,12 +193,14 @@ export default function EditJobPage() {
           </div>
         </motion.div>
 
+        {/* Submit — unchanged */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="flex gap-3">
           <button type="button" onClick={() => router.back()} className="px-6 py-3 bg-secondary hover:bg-secondary/80 text-foreground font-semibold rounded-xl text-sm transition-colors">Cancel</button>
           <button type="submit" disabled={isPending} className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-semibold rounded-xl text-sm transition-all">
             {isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Saving...</> : <><Save className="w-4 h-4" />Save Changes</>}
           </button>
         </motion.div>
+
       </form>
     </div>
   );

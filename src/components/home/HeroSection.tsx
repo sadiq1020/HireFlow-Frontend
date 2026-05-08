@@ -267,7 +267,7 @@ export default function HeroSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link
-            href={session?.user ? (session.user.role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
+            href={session?.user ? ((session.user as any).role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
             className="group px-8 py-3.5 bg-foreground text-background font-bold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg text-sm"
           >
             <span className="flex items-center gap-2">

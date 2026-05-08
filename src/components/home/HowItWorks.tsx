@@ -187,7 +187,7 @@ export default function HowItWorks() {
           className="text-center mt-20"
         >
           <Link
-            href={session?.user ? (session.user.role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
+            href={session?.user ? ((session.user as any).role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
             className="group relative inline-flex items-center gap-3 px-10 py-4 bg-foreground text-background font-bold rounded-xl overflow-hidden transition-all hover:-translate-y-1 hover:shadow-2xl"
           >
             <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />

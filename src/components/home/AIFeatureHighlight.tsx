@@ -225,7 +225,7 @@ export default function AIFeatureHighlight() {
               </p>
             </div>
             <Link
-              href={session?.user ? (session.user.role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
+              href={session?.user ? ((session.user as any).role === 'COMPANY' ? '/company/dashboard' : '/seeker/dashboard') : "/register"}
               className="flex-shrink-0 flex items-center gap-2 px-8 py-4 bg-white text-violet-600 font-bold rounded-xl transition-all hover:shadow-xl hover:-translate-y-0.5 text-sm whitespace-nowrap"
             >
               Get Started Free

@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
       extraContext?: string;
     };
 
-    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-    if (!ANTHROPIC_API_KEY) {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
       return NextResponse.json({ error: 'AI service not configured' }, { status: 503 });
     }
 
@@ -81,39 +81,40 @@ ${extraContext ? `\nAdditional context from the employer:\n${extraContext}` : ''
 
 Write the job description and requirements as JSON now.`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1200,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          contents: [
+            {
+              parts: [{ text: userPrompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            response_mime_type: 'application/json',
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      console.error('[GenerateJD] Anthropic error:', err);
-      if (response.status === 429) {
-        return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-      }
+      console.error('[GenerateJD] Gemini error:', err);
       return NextResponse.json({ error: 'AI service error' }, { status: response.status });
     }
 
     const data = await response.json();
-    const raw = data?.content?.[0]?.text?.trim() ?? '';
-
-    // Strip accidental markdown fences
-    const clean = raw.replace(/```json|```/g, '').trim();
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
 
     let parsed: { description: string; requirements: string };
     try {
-      parsed = JSON.parse(clean);
+      parsed = JSON.parse(raw);
     } catch {
       console.error('[GenerateJD] JSON parse failed:', raw);
       return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });

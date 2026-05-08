@@ -290,7 +290,7 @@ export function AIJobDescriptionPanel({
                           border: '1px solid oklch(50% 0.25 285 / 0.2)',
                         }}
                       >
-                        Powered by Claude
+                        Powered by Gemini
                       </span>
                     </div>
                   </div>
