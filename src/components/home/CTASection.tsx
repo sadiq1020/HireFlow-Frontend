@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Briefcase, Building2, Sparkles, Users } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const stats = [
   { value: '12k+', label: 'Active Jobs', icon: Briefcase },
@@ -11,6 +12,11 @@ const stats = [
 ];
 
 export default function CTASection() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Background */}
@@ -59,7 +65,7 @@ export default function CTASection() {
           />
 
           {/* Particle dots */}
-          {Array.from({ length: 20 }).map((_, i) => (
+          {mounted && Array.from({ length: 20 }).map((_, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 rounded-full bg-white/20"

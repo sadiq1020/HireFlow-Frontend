@@ -1,3 +1,4 @@
+import { AIChatbot } from '@/components/ai/ChatBot';
 import LenisProvider from '@/providers/lenis-provider';
 import QueryProvider from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -27,7 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -37,6 +41,7 @@ export default function RootLayout({
           <QueryProvider>
             <LenisProvider>
               {children}
+               <AIChatbot />
             </LenisProvider>
           </QueryProvider>
         </ThemeProvider>

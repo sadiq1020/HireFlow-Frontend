@@ -23,18 +23,20 @@ const floatingOrbs = [
   { size: 180, x: '25%', y: '75%', color: 'rgba(167, 139, 250, 0.08)', delay: 0.5 },
 ];
 
-const particlesData = Array.from({ length: 40 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 2 + 1,
-  duration: Math.random() * 12 + 10,
-  delay: Math.random() * 5,
-}));
+// Particle data will be generated on the client to avoid hydration mismatch
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
+  delay: number;
+}
 
 export default function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
   const [wordIndex, setWordIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
@@ -49,6 +51,18 @@ export default function HeroSection() {
 
   useEffect(() => {
     setMounted(true);
+
+    // Generate particles only on the client
+    const data = Array.from({ length: 40 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 2 + 1,
+      duration: Math.random() * 12 + 10,
+      delay: Math.random() * 5,
+    }));
+    setParticles(data);
+
     const interval = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % rotatingWords.length);
     }, 3000);
@@ -64,7 +78,7 @@ export default function HeroSection() {
       {mounted && (
         <div className="absolute inset-0 pointer-events-none">
           {/* Animated particles */}
-          {particlesData.map((particle) => (
+          {particles.map((particle) => (
             <motion.div
               key={particle.id}
               className="absolute rounded-full bg-primary/20"
