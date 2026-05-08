@@ -1,14 +1,14 @@
-import HeroSection from "@/components/home/HeroSection";
-import StatsSection from "@/components/home/StatsSection";
-import CategoriesSection from "@/components/home/CategoriesSection";
-import FeaturedJobs from "@/components/home/FeaturedJobs";
-import HowItWorks from "@/components/home/HowItWorks";
-import TopCompanies from "@/components/home/TopCompanies";
-import Testimonials from "@/components/home/Testimonials";
 import AIFeatureHighlight from "@/components/home/AIFeatureHighlight";
 import BlogPreview from "@/components/home/BlogPreview";
-import FAQSection from "@/components/home/FAQSection";
+import CategoriesSection from "@/components/home/CategoriesSection";
 import CTASection from "@/components/home/CTASection";
+import FAQSection from "@/components/home/FAQSection";
+import FeaturedJobs from "@/components/home/FeaturedJobs";
+import HeroSection from "@/components/home/HeroSection";
+import HowItWorks from "@/components/home/HowItWorks";
+import StatsSection from "@/components/home/StatsSection";
+import Testimonials from "@/components/home/Testimonials";
+import TopCompanies from "@/components/home/TopCompanies";
 
 export default function HomePage() {
   return (
