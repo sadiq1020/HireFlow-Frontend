@@ -3,6 +3,7 @@
 import JobCard from '@/components/jobs/JobCard';
 import Pagination from '@/components/shared/Pagination';
 import { JobCardSkeleton } from '@/components/shared/SkeletonCard';
+import { useDebounce } from '@/hooks/useDebounce'; // ← added
 import { api } from '@/lib/api';
 import { ICategory, IJob, IPaginatedResponse } from '@/types';
 import { useQuery } from '@tanstack/react-query';
@@ -10,7 +11,6 @@ import { motion } from 'framer-motion';
 import { Briefcase, MapPin, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
-
 
 const JOB_TYPES = [
   { value: '', label: 'All Types' },
@@ -39,10 +39,14 @@ function JobsContent() {
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
+  // ← added: debounced values — API only fires 400ms after the user stops typing
+  const debouncedSearch = useDebounce(search, 400);
+  const debouncedLocation = useDebounce(location, 400);
+
   const buildQuery = () => {
     const params = new URLSearchParams();
-    if (search) params.set('search', search);
-    if (location) params.set('location', location);
+    if (debouncedSearch) params.set('search', debouncedSearch);       // ← changed
+    if (debouncedLocation) params.set('location', debouncedLocation); // ← changed
     if (type) params.set('type', type);
     if (categoryId) params.set('categoryId', categoryId);
     params.set('sortBy', sortBy);
@@ -53,7 +57,8 @@ function JobsContent() {
   };
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['jobs', search, location, type, categoryId, sortBy, page],
+    // ← changed: queryKey uses debounced values so query only re-runs after debounce settles
+    queryKey: ['jobs', debouncedSearch, debouncedLocation, type, categoryId, sortBy, page],
     queryFn: () => api.get<IPaginatedResponse<IJob>>(`/jobs?${buildQuery()}`),
   });
 
@@ -221,16 +226,14 @@ function JobsContent() {
 
       {/* Results */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Loading */}
-       {isLoading && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-    {Array.from({ length: 12 }).map((_, i) => (
-      <JobCardSkeleton key={i} />
-    ))}
-  </div>
-)}
+        {isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <JobCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
 
-        {/* Results grid */}
         {!isLoading && (
           <>
             {jobs.length > 0 ? (
@@ -248,7 +251,6 @@ function JobsContent() {
                   ))}
                 </div>
 
-                {/* Pagination */}
                 {meta && meta.totalPages > 1 && (
                   <div className="mt-10">
                     <Pagination

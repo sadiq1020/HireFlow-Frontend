@@ -1,6 +1,7 @@
 'use client';
 
 import { CompanyCardSkeleton } from '@/components/shared/SkeletonCard';
+import { useDebounce } from '@/hooks/useDebounce'; // ← added
 import { api } from '@/lib/api';
 import { ICompany } from '@/types';
 import { useQuery } from '@tanstack/react-query';
@@ -107,6 +108,9 @@ function CompanyCard({ company, index }: { company: ICompany; index: number }) {
 export default function CompaniesPage() {
   const [search, setSearch] = useState('');
 
+  // ← added: debounced value — filter only runs 400ms after user stops typing
+  const debouncedSearch = useDebounce(search, 400);
+
   const { data, isLoading } = useQuery({
     queryKey: ['public-companies'],
     queryFn: () => api.get<any>('/company/public'),
@@ -114,10 +118,11 @@ export default function CompaniesPage() {
 
   const allCompanies: ICompany[] = (data as any)?.data || [];
 
+  // ← changed: uses debouncedSearch instead of search
   const companies = allCompanies.filter((c) =>
-    c.companyName.toLowerCase().includes(search.toLowerCase()) ||
-    c.industry?.toLowerCase().includes(search.toLowerCase()) ||
-    c.location?.toLowerCase().includes(search.toLowerCase())
+    c.companyName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    c.industry?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    c.location?.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   return (
@@ -175,12 +180,12 @@ export default function CompaniesPage() {
       {/* Results */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {isLoading && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-    {Array.from({ length: 8 }).map((_, i) => (
-      <CompanyCardSkeleton key={i} />
-    ))}
-  </div>
-)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <CompanyCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
 
         {!isLoading && companies.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
