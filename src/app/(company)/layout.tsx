@@ -12,7 +12,7 @@ const companyNavItems = [
 
 export default function CompanyLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-col lg:flex-row min-h-screen">
       <DashboardSidebar items={companyNavItems} />
       <main className="flex-grow p-8">{children}</main>
     </div>

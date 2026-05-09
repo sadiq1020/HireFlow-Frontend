@@ -15,6 +15,7 @@ const publicLinks = [
   { label: 'Companies', href: '/companies' },
   { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 const getDashboardLink = (role: string) => {

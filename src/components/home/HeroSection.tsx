@@ -271,7 +271,7 @@ export default function HeroSection() {
             className="group px-8 py-3.5 bg-foreground text-background font-bold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg text-sm"
           >
             <span className="flex items-center gap-2">
-              Get Started Free
+              {session?.user ? 'Go to Dashboard' : 'Get Started Free'}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
           </Link>
