@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Briefcase, MapPin, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 
 const JOB_TYPES = [
@@ -27,7 +27,7 @@ const SORT_OPTIONS = [
   { value: 'title', label: 'Title A-Z' },
 ];
 
-export default function JobsPage() {
+function JobsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -280,5 +280,22 @@ export default function JobsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background pt-32 px-4 max-w-7xl mx-auto">
+        <div className="h-10 w-48 bg-card rounded-lg animate-pulse mb-8" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-64 bg-card rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    }>
+      <JobsContent />
+    </Suspense>
   );
 }
