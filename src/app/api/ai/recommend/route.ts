@@ -55,8 +55,8 @@ Rules:
 - Return ONLY valid JSON. No markdown, no explanation, no preamble.
 - Pick 3 to 6 jobs that best match the seeker's inferred preferences.
 - matchScore: integer 0–100 based on how well the job matches their history/inferred skills.
-- matchReason: 1 sentence, max 12 words, specific to why this job suits them. Start with a verb or adjective. E.g. "Matches your engineering background and remote work preference." 
-- profileSummary: 1 short sentence summarizing what you inferred. Max 10 words. E.g. "Based on your 3 engineering applications."
+- matchReason: 1 sentence, max 12 words, specific to why this job suits them. Start with a verb or adjective. E.g. "Matches your engineering background and remote work preference." DO NOT use quotes inside the strings.
+- profileSummary: 1 short sentence summarizing what you inferred. Max 10 words. E.g. "Based on your 3 engineering applications." DO NOT use quotes inside the string.
 - If no history, recommend trending/varied jobs and set profileSummary to "Showing top-rated opportunities for new seekers."
 - Only return jobs from the provided availableJobs list (use their exact IDs).
 - Sort by matchScore descending.
@@ -113,9 +113,16 @@ Return the best matching jobs as JSON.`;
 
     let parsed: { profileSummary: string; recommendations: any[] };
     try {
-      parsed = JSON.parse(raw);
-    } catch {
-      console.error('[Recommend] JSON parse failed:', raw);
+      // Extract just the JSON object from the response (ignores any preamble/postamble text)
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      let cleanRaw = jsonMatch ? jsonMatch[0] : raw;
+
+      // Fix trailing commas which are common AI hallucinations in JSON
+      cleanRaw = cleanRaw.replace(/,\s*([\]}])/g, '$1');
+
+      parsed = JSON.parse(cleanRaw);
+    } catch (parseError) {
+      console.error('[Recommend] JSON parse failed. Raw text was:', raw);
       return NextResponse.json(
         { error: 'Failed to parse AI response' },
         { status: 500 }

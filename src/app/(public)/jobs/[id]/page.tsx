@@ -5,10 +5,11 @@ import { JobDetailSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
 import { useSession } from '@/lib/auth-client';
 import { IJob } from '@/types';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
+  Bookmark,
   BookmarkPlus,
   Briefcase, Building2,
   Calendar,
@@ -42,17 +43,26 @@ export default function JobDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [applyOpen, setApplyOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
 
+  // ── Job data ────────────────────────────────────────────────────────────────
   const { data, isLoading: jobLoading } = useQuery({
     queryKey: ['job', id],
     queryFn: () => api.get<any>(`/jobs/${id}`),
   });
 
+  // ── Applications — to check if already applied ──────────────────────────────
   const { data: applicationsData, isLoading: appsLoading } = useQuery({
     queryKey: ['my-applications'],
     queryFn: () => api.get<any>('/applications/my'),
+    enabled: !!session?.user,
+  });
+
+  // ── Saved jobs — to check if already saved + power the toggle ───────────────
+  const { data: savedJobsData } = useQuery({
+    queryKey: ['saved-jobs'],
+    queryFn: () => api.get<any>('/saved-jobs/my'),
     enabled: !!session?.user,
   });
 
@@ -60,13 +70,57 @@ export default function JobDetailPage() {
   const hasApplied = applicationsData?.data?.some((app: any) => app.jobId === id);
   const isLoading = jobLoading || (appsLoading && !!session?.user);
 
-  const handleSave = async () => {
+  // Derive saved state directly from the cache — updates instantly on toggle
+  const isAlreadySaved = (savedJobsData as any)?.data?.some(
+    (s: any) => s.jobId === id || s.job?.id === id
+  ) ?? false;
+
+  // ── Save mutation (optimistic) ──────────────────────────────────────────────
+  const { mutate: saveJob, isPending: isSaving } = useMutation({
+    mutationFn: () => api.post('/saved-jobs', { jobId: id }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['saved-jobs'] });
+      const previous = queryClient.getQueryData(['saved-jobs']);
+      queryClient.setQueryData(['saved-jobs'], (old: any) => {
+        if (!old?.data) return old;
+        return { ...old, data: [...old.data, { id: `optimistic-${id}`, jobId: id, job }] };
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['saved-jobs'], context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['saved-jobs'] }),
+  });
+
+  // ── Unsave mutation (optimistic) ────────────────────────────────────────────
+  const { mutate: unsaveJob, isPending: isUnsaving } = useMutation({
+    mutationFn: () => api.delete(`/saved-jobs/${id}`),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['saved-jobs'] });
+      const previous = queryClient.getQueryData(['saved-jobs']);
+      queryClient.setQueryData(['saved-jobs'], (old: any) => {
+        if (!old?.data) return old;
+        return {
+          ...old,
+          data: old.data.filter((s: any) => s.jobId !== id && s.job?.id !== id),
+        };
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['saved-jobs'], context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['saved-jobs'] }),
+  });
+
+  // ── Toggle handler ──────────────────────────────────────────────────────────
+  const handleSaveToggle = () => {
     if (!session?.user) { router.push('/login'); return; }
-    try {
-      await api.post('/saved-jobs', { jobId: id });
-      setSaved(true);
-    } catch {}
+    isAlreadySaved ? unsaveJob() : saveJob();
   };
+
+  const isSaveLoading = isSaving || isUnsaving;
 
   if (isLoading) {
     return (
@@ -184,18 +238,31 @@ export default function JobDetailPage() {
                     'Apply Now'
                   )}
                 </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saved}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-semibold text-sm transition-all ${
-                    saved
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+
+                {/* Save / Unsave toggle */}
+                <motion.button
+                  onClick={handleSaveToggle}
+                  disabled={isSaveLoading}
+                  whileTap={{ scale: 0.95 }}
+                  title={isAlreadySaved ? 'Click to unsave' : 'Save this job'}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-semibold text-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
+                    isAlreadySaved
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400'
                       : 'bg-secondary border-border text-muted-foreground hover:border-primary/30 hover:text-foreground'
                   }`}
                 >
-                  {saved ? <CheckCircle className="w-4 h-4" /> : <BookmarkPlus className="w-4 h-4" />}
-                  {saved ? 'Saved' : 'Save'}
-                </button>
+                  {isAlreadySaved ? (
+                    <>
+                      <Bookmark className="w-4 h-4 fill-current" />
+                      Saved
+                    </>
+                  ) : (
+                    <>
+                      <BookmarkPlus className="w-4 h-4" />
+                      Save
+                    </>
+                  )}
+                </motion.button>
               </div>
             </motion.div>
 
