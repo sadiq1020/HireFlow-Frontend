@@ -1,7 +1,9 @@
 'use client';
 
+import Pagination from '@/components/shared/Pagination';
 import { JobCardSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
+import { IPaginatedResponse } from '@/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Briefcase, Eye, EyeOff, MapPin, Pencil, Plus, Trash2, Users } from 'lucide-react';
@@ -28,9 +30,11 @@ export default function CompanyJobsPage() {
   const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['my-jobs'],
-    queryFn: () => api.get<any>('/jobs/my-jobs?limit=100'),
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ['my-jobs', page],
+    queryFn: () => api.get<IPaginatedResponse<any>>(`/jobs/my-jobs?page=${page}&limit=12`),
   });
 
   const { mutate: deleteJob } = useMutation({
@@ -48,6 +52,7 @@ export default function CompanyJobsPage() {
   });
 
   const jobs = data?.data || [];
+  const meta = data?.meta;
 
   return (
     <div className="space-y-6">
@@ -60,7 +65,7 @@ export default function CompanyJobsPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">My Job Listings</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {jobs.length} job{jobs.length !== 1 ? 's' : ''} posted
+            {meta?.total ? `${meta.total} job${meta.total !== 1 ? 's' : ''} posted` : 'Manage your job postings'}
           </p>
         </div>
         <Link
@@ -96,19 +101,20 @@ export default function CompanyJobsPage() {
 
       {/* Jobs grid */}
       {!isLoading && jobs.length > 0 && (
-        <AnimatePresence>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {jobs.map((job: any, i: number) => (
-              <motion.div
-                key={job.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ delay: i * 0.05 }}
-                className={`group bg-card border rounded-2xl p-5 relative overflow-hidden transition-all hover:shadow-lg ${
-                  job.isActive ? 'border-border hover:border-primary/30' : 'border-border/50 opacity-70'
-                }`}
-              >
+        <>
+          <AnimatePresence>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${isFetching ? 'opacity-60' : ''} transition-opacity`}>
+              {jobs.map((job: any, i: number) => (
+                <motion.div
+                  key={job.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`group bg-card border rounded-2xl p-5 relative overflow-hidden transition-all hover:shadow-lg ${
+                    job.isActive ? 'border-border hover:border-primary/30' : 'border-border/50 opacity-70'
+                  }`}
+                >
                 {/* Inactive overlay */}
                 {!job.isActive && (
                   <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-secondary text-xs font-bold text-muted-foreground border border-border">
@@ -167,7 +173,17 @@ export default function CompanyJobsPage() {
               </motion.div>
             ))}
           </div>
-        </AnimatePresence>
+          </AnimatePresence>
+          {meta && meta.totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={page}
+                totalPages={meta.totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
+        </>
       )}
 
       {/* Delete confirm modal */}

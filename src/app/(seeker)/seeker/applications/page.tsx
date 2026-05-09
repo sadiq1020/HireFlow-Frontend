@@ -1,7 +1,9 @@
 'use client';
 
+import Pagination from '@/components/shared/Pagination';
 import { JobCardSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
+import { IPaginatedResponse } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowRight, Briefcase, Clock, MapPin } from 'lucide-react';
@@ -20,16 +22,23 @@ const filters = ['ALL', 'PENDING', 'REVIEWED', 'SHORTLISTED', 'REJECTED', 'HIRED
 
 export default function SeekerApplicationsPage() {
   const [activeFilter, setActiveFilter] = useState('ALL');
+  const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['my-applications'],
-    queryFn: () => api.get<any>('/applications/my'),
+  const buildQuery = () => {
+    const params = new URLSearchParams();
+    if (activeFilter !== 'ALL') params.set('status', activeFilter);
+    params.set('page', page.toString());
+    params.set('limit', '12');
+    return params.toString();
+  };
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ['my-applications', activeFilter, page],
+    queryFn: () => api.get<IPaginatedResponse<any>>(`/applications/my?${buildQuery()}`),
   });
 
-  const allApplications = data?.data || [];
-  const applications = activeFilter === 'ALL'
-    ? allApplications
-    : allApplications.filter((a: any) => a.status === activeFilter);
+  const applications = data?.data || [];
+  const meta = data?.meta;
 
   return (
     <div className="space-y-6">
@@ -49,14 +58,11 @@ export default function SeekerApplicationsPage() {
         className="flex flex-wrap gap-2"
       >
         {filters.map((filter) => {
-          const count = filter === 'ALL'
-            ? allApplications.length
-            : allApplications.filter((a: any) => a.status === filter).length;
           const config = statusConfig[filter];
           return (
             <button
               key={filter}
-              onClick={() => setActiveFilter(filter)}
+              onClick={() => { setActiveFilter(filter); setPage(1); }}
               className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
                 activeFilter === filter
                   ? filter === 'ALL'
@@ -69,7 +75,6 @@ export default function SeekerApplicationsPage() {
                 <div className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
               )}
               {filter === 'ALL' ? 'All' : config?.label}
-              <span className="opacity-60">({count})</span>
             </button>
           );
         })}
@@ -97,7 +102,7 @@ export default function SeekerApplicationsPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className={`space-y-4 ${isFetching ? 'opacity-60' : ''} transition-opacity`}>
               {applications.map((app: any, i: number) => {
                 const config = statusConfig[app.status];
                 return (
@@ -170,6 +175,15 @@ export default function SeekerApplicationsPage() {
                   </motion.div>
                 );
               })}
+            </div>
+          )}
+          {meta && meta.totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={page}
+                totalPages={meta.totalPages}
+                onPageChange={setPage}
+              />
             </div>
           )}
         </>

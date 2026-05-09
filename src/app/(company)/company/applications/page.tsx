@@ -1,7 +1,9 @@
 'use client';
 
+import Pagination from '@/components/shared/Pagination';
 import { JobCardSkeleton } from '@/components/shared/SkeletonCard';
 import { api } from '@/lib/api';
+import { IPaginatedResponse } from '@/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Clock, ExternalLink, FileText, Loader2, MapPin, Users } from 'lucide-react';
@@ -29,10 +31,19 @@ export default function CompanyApplicationsPage() {
   const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['company-applications'],
-    queryFn: () => api.get<any>('/company/applications'),
+  const buildQuery = () => {
+    const params = new URLSearchParams();
+    if (activeFilter !== 'ALL') params.set('status', activeFilter);
+    params.set('page', page.toString());
+    params.set('limit', '12');
+    return params.toString();
+  };
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ['company-applications', activeFilter, page],
+    queryFn: () => api.get<IPaginatedResponse<any>>(`/company/applications?${buildQuery()}`),
   });
 
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
@@ -44,10 +55,8 @@ export default function CompanyApplicationsPage() {
     },
   });
 
-  const allApplications = data?.data || [];
-  const applications = activeFilter === 'ALL'
-    ? allApplications
-    : allApplications.filter((a: any) => a.status === activeFilter);
+  const applications = data?.data || [];
+  const meta = data?.meta;
 
   return (
     <div className="space-y-6">
@@ -67,12 +76,11 @@ export default function CompanyApplicationsPage() {
         className="flex flex-wrap gap-2"
       >
         {filters.map((filter) => {
-          const count = filter === 'ALL' ? allApplications.length : allApplications.filter((a: any) => a.status === filter).length;
           const config = statusConfig[filter];
           return (
             <button
               key={filter}
-              onClick={() => setActiveFilter(filter)}
+              onClick={() => { setActiveFilter(filter); setPage(1); }}
               className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
                 activeFilter === filter
                   ? filter === 'ALL' ? 'bg-primary text-primary-foreground border-primary' : config.color
@@ -81,7 +89,6 @@ export default function CompanyApplicationsPage() {
             >
               {filter !== 'ALL' && <div className={`w-1.5 h-1.5 rounded-full ${config?.dot}`} />}
               {filter === 'ALL' ? 'All' : config?.label}
-              <span className="opacity-60">({count})</span>
             </button>
           );
         })}
@@ -107,7 +114,7 @@ export default function CompanyApplicationsPage() {
 
       {/* Applications list */}
       {!isLoading && applications.length > 0 && (
-        <div className="space-y-4">
+        <div className={`space-y-4 ${isFetching ? 'opacity-60' : ''} transition-opacity`}>
           {applications.map((app: any, i: number) => {
             const config = statusConfig[app.status];
             return (
@@ -224,6 +231,15 @@ export default function CompanyApplicationsPage() {
               </motion.div>
             );
           })}
+          {meta && meta.totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={page}
+                totalPages={meta.totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
         </div>
       )}
 

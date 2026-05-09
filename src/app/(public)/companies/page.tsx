@@ -1,9 +1,10 @@
 'use client';
 
 import { CompanyCardSkeleton } from '@/components/shared/SkeletonCard';
+import Pagination from '@/components/shared/Pagination';
 import { useDebounce } from '@/hooks/useDebounce'; // ← added
 import { api } from '@/lib/api';
-import { ICompany } from '@/types';
+import { ICompany, IPaginatedResponse } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Briefcase, Building2, MapPin, Search, X } from 'lucide-react';
@@ -107,23 +108,26 @@ function CompanyCard({ company, index }: { company: ICompany; index: number }) {
 
 export default function CompaniesPage() {
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   // ← added: debounced value — filter only runs 400ms after user stops typing
   const debouncedSearch = useDebounce(search, 400);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['public-companies'],
-    queryFn: () => api.get<any>('/company/public'),
+  const buildQuery = () => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    params.set('page', page.toString());
+    params.set('limit', '12');
+    return params.toString();
+  };
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ['public-companies', debouncedSearch, page],
+    queryFn: () => api.get<IPaginatedResponse<ICompany>>(`/company/public?${buildQuery()}`),
   });
 
-  const allCompanies: ICompany[] = (data as any)?.data || [];
-
-  // ← changed: uses debouncedSearch instead of search
-  const companies = allCompanies.filter((c) =>
-    c.companyName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    c.industry?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    c.location?.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
+  const companies: ICompany[] = (data as any)?.data || [];
+  const meta = (data as any)?.meta;
 
   return (
     <div className="min-h-screen bg-background pt-20">
@@ -149,7 +153,7 @@ export default function CompaniesPage() {
               </span>
             </h1>
             <p className="text-muted-foreground text-sm">
-              {allCompanies.length} verified companies actively hiring
+              {meta?.total ? `${meta.total} verified companies actively hiring` : 'Verified companies actively hiring'}
             </p>
           </motion.div>
 
@@ -165,11 +169,11 @@ export default function CompaniesPage() {
               type="text"
               placeholder="Search by company name, industry, or location..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-sm"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="text-muted-foreground hover:text-foreground">
+              <button onClick={() => { setSearch(''); setPage(1); }} className="text-muted-foreground hover:text-foreground">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
@@ -188,11 +192,22 @@ export default function CompaniesPage() {
         )}
 
         {!isLoading && companies.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {companies.map((company, i) => (
-              <CompanyCard key={company.id} company={company} index={i} />
-            ))}
-          </div>
+          <>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 ${isFetching ? 'opacity-60' : ''} transition-opacity`}>
+              {companies.map((company, i) => (
+                <CompanyCard key={company.id} company={company} index={i} />
+              ))}
+            </div>
+            {meta && meta.totalPages > 1 && (
+              <div className="mt-10">
+                <Pagination
+                  currentPage={page}
+                  totalPages={meta.totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
+          </>
         )}
 
         {!isLoading && companies.length === 0 && (
