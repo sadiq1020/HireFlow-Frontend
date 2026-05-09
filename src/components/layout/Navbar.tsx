@@ -118,10 +118,18 @@ export default function Navbar() {
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-all"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary">
-                      {session.user.name?.charAt(0).toUpperCase()}
-                    </span>
+                  <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center overflow-hidden">
+                    {session.user.image ? (
+                      <img
+                        src={session.user.image}
+                        alt={session.user.name || 'User'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-sm font-semibold text-primary">
+                        {session.user.name?.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   <span className="text-sm font-medium text-foreground">
                     {session.user.name?.split(' ')[0]}
@@ -237,7 +245,31 @@ export default function Navbar() {
                 )}
 
                 {session?.user ? (
-                  <>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-secondary/50 rounded-xl">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {session.user.image ? (
+                          <img
+                            src={session.user.image}
+                            alt={session.user.name || 'User'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-base font-semibold text-primary">
+                            {session.user.name?.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-foreground leading-none">
+                          {session.user.name}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground mt-1">
+                          {session.user.email}
+                        </span>
+                      </div>
+                    </div>
+
                     <Link
                       href={getDashboardLink((session.user as any).role || 'SEEKER')}
                       onClick={() => setIsOpen(false)}
@@ -245,13 +277,20 @@ export default function Navbar() {
                     >
                       Dashboard
                     </Link>
+                    <Link
+                      href={`/${(session.user as any).role === 'COMPANY' ? 'company' : 'seeker'}/profile`}
+                      onClick={() => setIsOpen(false)}
+                      className="block px-4 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+                    >
+                      Profile
+                    </Link>
                     <button
                       onClick={() => { setIsOpen(false); handleSignOut(); }}
                       className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
                     >
                       Sign Out
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <Link
