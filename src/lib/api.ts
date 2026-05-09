@@ -1,4 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const getBaseURL = () => {
+  if (typeof window !== 'undefined') return ''; // Use relative URL in browser to hit Next.js rewrites
+  if (process.env.NEXT_PUBLIC_FRONTEND_URL) return process.env.NEXT_PUBLIC_FRONTEND_URL;
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  return 'http://localhost:3000';
+};
+
+const API_URL = getBaseURL();
 
 type RequestOptions = {
   method?: string;
