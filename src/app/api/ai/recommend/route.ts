@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemini-2.5-flash';
@@ -95,8 +95,6 @@ Return the best matching jobs as JSON.`;
           { role: 'user', parts: [{ text: userMessage }] }
         ],
         generationConfig: {
-          response_mime_type: "application/json",
-          maxOutputTokens: 1000,
           temperature: 0.1,
         },
       }),
